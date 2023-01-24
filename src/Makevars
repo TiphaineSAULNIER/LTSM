@@ -1,0 +1,14 @@
+PKG_LIBS = $(BLAS_LIBS) $(FLIBS)
+
+CSRC = init.c
+FSRC = compute.f90 loglik.f90 dens.f90
+
+# Define order of compilation
+OBJECTS = $(CSRC:.c=.o) $(FSRC:.f90=.o) 
+
+$(SHLIB): $(OBJECTS)
+
+
+#Setup dependencies for parallel make
+loglik.o: compute.o
+dens.o: compute.o
