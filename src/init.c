@@ -4,8 +4,8 @@
 #include "LTSM.h"
 
 static R_FortranMethodDef FortRout[] = {
-  {"loglik", (DL_FUNC) &F77_SUB(loglik), 19},
-  {"dens", (DL_FUNC) &F77_SUB(dens), 16},
+  {"loglik", (DL_FUNC) &F77_SUB(loglik), 44},
+  {"dens", (DL_FUNC) &F77_SUB(dens), 44},
   {NULL, NULL, 0}
 };
 
