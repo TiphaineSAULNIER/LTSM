@@ -559,6 +559,7 @@ jointLTSM <- function(fixed, random, range,
     nb <- 0
     for (k in 1:ny)
     {
+      
       if(idlink[k]!=2)
       {
         indiceY0 <- c(indiceY0, rep(0,length(get(dataY[k])[,nomsY[k]])))
@@ -568,6 +569,7 @@ jointLTSM <- function(fixed, random, range,
       yk <- get(dataY[k])[,nomsY[k]]
       uniqueTemp <- sort(unique(yk))
       permut <- order(order(yk))  # sort(y)[order(order(y))] = y
+      
       if(length(as.vector(table(yk)))==length(uniqueTemp))
       {
         indice <- rep(1:length(uniqueTemp), as.vector(table(yk)))
@@ -593,6 +595,7 @@ jointLTSM <- function(fixed, random, range,
         nb <- nb + length(yk)
         nvalSPLORD[k] <- length(yk)
       }
+      
     }
     
     
@@ -994,7 +997,9 @@ jointLTSM <- function(fixed, random, range,
     idsurv <- c(0,(z.X0 %in% z.survcause) + 0)
     idsurv[2] <- 0 # no intercept or confused with baseline risk
     
-    idsurv.s <- z.surv.s
+    idsurv.s <- 0
+    if(nbevt > 0)
+      idsurv.s <- z.surv.s
       
     # id.fp = fct du tps
     FP.power <- c(-2,-1,-0.5,0,0.5,1,2,3)
@@ -1139,7 +1144,7 @@ jointLTSM <- function(fixed, random, range,
       #variances to 1
       b[nrisqtot + nvarxevt + sum(nasso) + nef.s + nvc.s] <- 1 # shift
       for(k in 1:ny){
-        prev_k <- (k-1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
+        prev_k <- ifelse(k==1,0,1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
         if(idmodel[k]==0){ # logistic
           b[nrisqtot + nvarxevt + sum(nasso) + nef.s + nvc.s + prev_k + nef[k] + 1:nea[k]] <- 1 # var rate, nu et u
         }
@@ -1155,7 +1160,7 @@ jointLTSM <- function(fixed, random, range,
       #fct de lien
       if(any(idlink!=0)){
         for(k in 1:ny){
-          prev_k <- (k-1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
+          prev_k <- ifelse(k==1,0,1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
           if(idlink[k]==1){ # linear
             b[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+nvc[k]+1] <- mean(get(dataY[k])[,nomsY[k]])
             b[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+nvc[k]+2] <- 1
@@ -1296,7 +1301,8 @@ jointLTSM <- function(fixed, random, range,
     # partie long
     for(k in 1:ny){
       
-      prev_k <- (k-1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
+      prev_k <- ifelse(k==1,0,1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
+      
       
       if(idmodel[k]==0){ # logistic
         names(b)[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+1:(nef[k]-1)] <- paste("Y",k,". rate. ",nom.X0[idg[k,-1]!=0],sep="")
@@ -1339,7 +1345,6 @@ jointLTSM <- function(fixed, random, range,
     
     namesb <- names(b)
     
-    
     ## prm fixes
     fix <- rep(0,NPM)
     if(length(posfix))
@@ -1359,9 +1364,9 @@ jointLTSM <- function(fixed, random, range,
     mvc[1,1] <- b[nrisqtot + nvarxevt + sum(nasso) + nef.s + nvc.s]
       #longit.
     for(k in 1:ny){
-      prev_k <- (k-1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
+      prev_k <- ifelse(k==1,0,1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
       if(idmodel[k]==0){ # logistic
-        diag(mvc)[1+(k-1)*sum(nea[1:(k-1)])+1:nea[k]] <- b[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+1:nea[k]]
+        diag(mvc)[1+ifelse(k==1,0,1)*sum(nea[1:(k-1)])+1:nea[k]] <- b[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+1:nea[k]]
       }
       if(idmodel[k]==1){ # linear
         mvc.k <- matrix(0,nea[k],nea[k])
@@ -1371,7 +1376,7 @@ jointLTSM <- function(fixed, random, range,
         mvc.k[upper.tri(mvc.k,diag=T)] <- b_mvc.k
         mvc.k <- t(mvc.k)
         mvc.k[upper.tri(mvc.k, diag=TRUE)] <- b_mvc.k
-        mvc[1+(k-1)*sum(nea[1:(k-1)])+1:nea[k],1+(k-1)*sum(nea[1:(k-1)])+1:nea[k]] <- mvc.k
+        mvc[1+ifelse(k==1,0,1)*sum(nea[1:(k-1)])+1:nea[k],1+ifelse(k==1,0,1)*sum(nea[1:(k-1)])+1:nea[k]] <- mvc.k
       }
     }
     ind_var0 <- (1:neatot)[diag(mvc)==0] # si variances a 0 -> les passer en 1 pr transfo cholesky [uniquement valable pr shift ou logistic car diago]
@@ -1381,17 +1386,16 @@ jointLTSM <- function(fixed, random, range,
     # re-injecter
     b[nrisqtot + nvarxevt + sum(nasso) + nef.s + nvc.s] <- ch[1,1]
     for(k in 1:ny){
-      prev_k <- (k-1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
+      prev_k <- ifelse(k==1,0,1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1)) # previous markers' prms
       if(idmodel[k]==0) # logistic
-        b[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+1:nea[k]] <- diag(ch)[1+(k-1)*sum(nea[1:(k-1)])+1:nea[k]]
+        b[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+1:nea[k]] <- diag(ch)[1+ifelse(k==1,0,1)*sum(nea[1:(k-1)])+1:nea[k]]
       if(idmodel[k]==1){ # linear
-        ch.k <- ch[1+(k-1)*sum(nea[1:(k-1)])+1:nea[k],1+(k-1)*sum(nea[1:(k-1)])+1:nea[k]]
+        ch.k <- ch[1+ifelse(k==1,0,1)*sum(nea[1:(k-1)])+1:nea[k],1+ifelse(k==1,0,1)*sum(nea[1:(k-1)])+1:nea[k]]
         ch.k_vect <- ch.k[upper.tri(ch.k,diag=T)]
         if(idlink[k]!=0) ch.k_vect <- ch.k_vect[-1] # identifiability constraint
         b[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+1:nvc[k]] <- ch.k_vect
       }
     }
-    
     
     # fixed prms
     nfix <- sum(fix)
@@ -1414,6 +1418,51 @@ jointLTSM <- function(fixed, random, range,
     ###############
     ###   MLA   ###
     ###############
+    
+    # print("b");print(b)
+    # print("Y0");print(Y0)
+    # print("X0");print(X0)
+    # print("tsurv0");print(tsurv0)
+    # print("tsurv");print(tsurv)
+    # print("devt");print(devt)
+    # print("idea.fp");print(idea.fp)
+    # print("idg.fp");print(idg.fp)
+    # print("idea");print(idea)
+    # print("idg");print(idg)
+    # print("idg.interac");print(idg.interac)
+    # print("idg.s");print(idg.s)
+    # print("idsurv");print(idsurv)
+    # print("idsurv.s");print(idsurv.s)
+    # print("idsurv.s.fp");print(idsurv.s.fp)
+    # print("sharedtype");print(sharedtype)
+    # print("nGK");print(nGK)
+    # print("typrisq");print(typrisq)
+    # print("nz");print(nz)
+    # print("zi");print(zi)
+    # print("nbevt");print(nbevt)
+    # print("idtrunc");print(idtrunc)
+    # print("logspecif");print(logspecif)
+    # print("ny");print(ny)
+    # print("ns");print(ns)
+    # print("nv");print(nv)
+    # print("nobs");print(nobs)
+    # print("nmes");print(nmes)
+    # print("NPM");print(NPM)
+    # print("nfix");print(nfix)
+    # print("bfix");print(bfix)
+    # print("idmodel");print(idmodel)
+    # print("idlink");print(idlink)
+    # print("nbzitr");print(nbzitr)
+    # print("zitr");print(zitr)
+    # print("uniqueY0");print(uniqueY0)
+    # print("indiceY0");print(indiceY0)
+    # print("nvalSPLORD");print(nvalSPLORD)
+    # print("fix");print(fix)
+    # print("methInteg");print(methInteg)
+    # print("nMC");print(nMC)
+    # print("dimMC");print(dimMC)
+    # print("seqMC");print(seqMC)
+    
     
     if(maxiter==0)
     {
@@ -1485,7 +1534,7 @@ jointLTSM <- function(fixed, random, range,
     out$best[nrisqtot + nvarxevt + sum(nasso) + nef.s + nvc.s] <- out$best[nrisqtot + nvarxevt + sum(nasso) + nef.s + nvc.s]**2
     #longit.
     for(k in 1:ny){
-      prev_k <- (k-1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1))
+      prev_k <- ifelse(k==1,0,1)*(sum(nef[1:(k-1)])+sum(nvc[1:(k-1)])+sum(ntr[1:(k-1)])+(k-1))
       if(idmodel[k]==0){ # logistic
         Cholesky <- c(Cholesky,out$best[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+1:nea[k]])
         out$best[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+1:nea[k]] <- out$best[nrisqtot+nvarxevt+sum(nasso)+nef.s+nvc.s+prev_k+nef[k]+1:nea[k]]**2

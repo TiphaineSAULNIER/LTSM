@@ -2582,7 +2582,12 @@ double precision function fct_predCV(i,s,yk,sumMesYk,ui,entry,GKpoint)
    
      pred = ( 1 + exp( - rate*t ) ) ** nu   ! denominator
      pred = asymptL(yk) + (asymptU(yk) - asymptL(yk)) / pred   ! mean
-     pred = pred + ui(1+(yk-1)*sum(nea(1:(yk-1)))+3)   ! + random effects    ! here ok ??
+     if(yk.eq.1) then
+        pred = pred + ui(1+3)   ! + random effects
+     else
+        pred = pred + ui(1+sum(nea(1:(yk-1)))+3)   ! + random effects
+     end if
+
 
    end if
    
@@ -2664,7 +2669,12 @@ double precision function fct_predCV(i,s,yk,sumMesYk,ui,entry,GKpoint)
            
      ! prediction + random effects
      if(idea(yk).ne.0) then
-       pred = pred + ui(1+(yk-1)*sum(nea(1:(yk-1)))+1)
+       !pred = pred + ui(1+(yk-1)*sum(nea(1:(yk-1)))+1)
+       if(yk.eq.1) then
+          pred = pred + ui(1+1)
+       else
+          pred = pred + ui(1+sum(nea(1:(yk-1)))+1)
+       end if
      end if
      !print*,"ind_ui_int_ea",1+(yk-1)*sum(nea(1:(yk-1)))+1
      !print*,"ui_int_ea",ui(1+(yk-1)*sum(nea(1:(yk-1)))+1)
@@ -2672,7 +2682,12 @@ double precision function fct_predCV(i,s,yk,sumMesYk,ui,entry,GKpoint)
      
      if(npm_ea_t(yk).ne.0) then
        do k=1,npm_ea_t(yk)
-         pred = pred + vz_t(k) * ui(1+(yk-1)*sum(nea(1:(yk-1)))+idea(yk)+k)
+         ! pred = pred + vz_t(k) * ui(1+(yk-1)*sum(nea(1:(yk-1)))+idea(yk)+k)
+         if(yk.eq.1) then
+            pred = pred + vz_t(k) * ui(1+idea(yk)+k)
+         else
+            pred = pred + vz_t(k) * ui(1+sum(nea(1:(yk-1)))+idea(yk)+k)
+         end if
        end do
      end if
 
