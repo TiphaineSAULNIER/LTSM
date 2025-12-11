@@ -1,14 +1,14 @@
 Package: LTSM
 Type: Package
 Title: Latent Time Shift Model
-Version: 2.0.0
-Date: 2024-07-01
+Version: 3.0.0
+Date: 2025-12-11
 Authors@R: c(person("Tiphaine", "Saulnier", role=c("aut","cre"),email="tiphaine.saulnier@u-bordeaux.fr"),
 	     person("Cecile", "Proust-Lima", role="aut"),	     
 	     person("Viviane", "Philipps", role="aut"))
 Description: Estimation of mixed models including a recalibration of the study time. Extension to joint model with shared random effects framework. Longitudinal data are handled in latent process models for continuous (Gaussian or curvilinear) outcomes while proportional hazard models are used for the survival part. We propose a frequentist approach using maximum likelihood estimation. See <future article>.
 License: GPL (>= 2.0)
-Depends: R (>= 2.14.0), survival (>= 2.37-2), randtoolbox (< 2.0.0), marqLevAlg (>= 2.0.6), mvtnorm
+Depends: R (>= 2.14.0), survival (>= 2.37-2), spacefillr, marqLevAlg (>= 2.0.6), mvtnorm
 Suggests: lcmm
 BugReports: https://github.com/TiphaineSaulnier/LTSM/issues
 LazyLoad: yes

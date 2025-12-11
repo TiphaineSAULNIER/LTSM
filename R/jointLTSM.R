@@ -1100,7 +1100,11 @@ jointLTSM <- function(fixed, random, range,
     if(methInteg==3)
     {
       dimMC <- neatot
-      if(dimMC>0) seqMC <- randtoolbox::sobol(n=nMC,dim=dimMC,normal=TRUE,scrambling=1)
+      if(dimMC>0){ 
+        # seqMC <- randtoolbox::sobol(n=nMC,dim=dimMC,normal=TRUE,scrambling=1)
+        sequnif <- spacefillr::generate_sobol_owen_set(nMC, dimMC)
+        seqMC <- apply(sequnif, 2, qnorm)
+      }
     }
     #print("seqMC");cat(seqMC)
     
